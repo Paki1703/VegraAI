@@ -64,6 +64,7 @@ class App(ctk.CTk):
 
         self.predictor: IntentPredictor | None = None
         self.voice_on = ctk.BooleanVar(value=True)
+        self.last_intent: str | None = None
         self._build_ui()
         self.after(200, self._init_model)
 
@@ -227,8 +228,8 @@ class App(ctk.CTk):
             return
 
         try:
-            resp, _ = process(text, self.predictor)
-            self.after(0, lambda: self._add_msg("assistant", resp))
+            resp, _, tag = process(text, self.predictor, self.last_intent)
+            self.after(0, lambda r=resp, t=tag: (self._add_msg("assistant", r), setattr(self, "last_intent", t)))
             if self.voice_on.get():
                 speak(resp, block=True)
         except Exception as e:
@@ -241,8 +242,8 @@ class App(ctk.CTk):
                 self.after(0, lambda: self._add_msg("assistant", "Сначала обучи нейросеть: python neural/train.py"))
                 return
             try:
-                resp, _ = process(text, self.predictor)
-                self.after(0, lambda: self._add_msg("assistant", resp))
+                resp, _, tag = process(text, self.predictor, self.last_intent)
+                self.after(0, lambda r=resp, t=tag: (self._add_msg("assistant", r), setattr(self, "last_intent", t)))
                 if use_speak:
                     speak(resp, block=True)
             except Exception as e:

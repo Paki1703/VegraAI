@@ -27,6 +27,7 @@ def main():
         print("Сначала обучи нейросеть: python neural/train.py")
         return
 
+    last_intent: str | None = None
     while True:
         print("Говори...")
         text = listen_once()
@@ -35,7 +36,8 @@ def main():
             continue
         print(f"Ты: {text}")
 
-        response, should_exit = process(text, predictor)
+        response, should_exit, tag = process(text, predictor, last_intent)
+        last_intent = tag
         print(f"VegraAI: {response}\n")
         speak(response, block=True)
 

@@ -50,8 +50,15 @@ VOICE_INDEX = 0
 SPEECH_RATE = 150   # Скорость речи (слов в минуту)
 VOLUME = 1.0        # Громкость 0.0–1.0
 
-# ============ LLM (Ollama) — ответы не шаблонами, а нейросетью ============
-# Нужно: 1) Установить Ollama с https://ollama.com  2) В терминале: ollama pull llama3.2
+# ============ LLM (Ollama) — ответы нейросетью, не шаблонами ============
+# 1) Установи Ollama: https://ollama.com
+# 2) Скачай модель (одну на выбор):
+#       ollama pull qwen2.5:3b          — Qwen, лёгкая, хорошо по-русски
+#       ollama pull qwen2.5:7b          — Qwen, мощнее
+#       ollama pull deepseek-r1:7b-qwen-distill-q4_K_M   — DeepSeek R1 7B
+#       ollama pull deepseek-r1:14b-qwen-distill-q4_K_M  — DeepSeek R1 14B (нужно больше RAM)
+#       ollama pull llama3.2            — Llama
+# 3) Укажи ниже то же имя, что после "ollama pull"
 LLM_ENABLED = True
-LLM_MODEL = "llama3.2"   # или: mistral, qwen2.5:3b, phi3 — что скачано в Ollama
-LLM_MAX_LENGTH = 600     # макс. длина ответа (для озвучки не стоит делать длиннее)
+LLM_MODEL = "qwen2.5:3b"   # или: deepseek-r1:7b-qwen-distill-q4_K_M, deepseek-r1:14b-qwen-distill-q4_K_M, llama3.2
+LLM_MAX_LENGTH = 600       # макс. длина ответа для озвучки

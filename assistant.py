@@ -92,15 +92,13 @@ def _is_implicit_search(text: str) -> bool:
 
 
 def _llm_reply(user_text: str, intent_tag: str) -> str | None:
-    """
-    Ответ от LLM (Ollama) вместо шаблона. Возвращает None при отключении/ошибке — тогда используется шаблон.
-    """
+    """Ответ от LLM (Ollama). None при отключении/ошибке — тогда шаблон."""
     if not LLM_ENABLED:
         return None
     system = (
-        "Ты VegraAI — голосовой помощник в стиле Джарвиса. Отвечай на русском, кратко (1–4 предложения) и по-человечески. "
-        "Можешь шутить, подбадривать, давать советы. Не говори «я нейросеть» или «я программа», если не спросят. "
-        "Стиль: дружелюбный, умный, с лёгким юмором. Контекст реплики: " + intent_tag.replace("_", " ") + "."
+        "Ты VegraAI — голосовой помощник в стиле Джарвиса. Отвечай на русском, кратко (1–4 предложения), по-человечески. "
+        "Можешь шутить, подбадривать, давать советы. Не говори «я нейросеть/программа», если не спросят. "
+        "Стиль: дружелюбный, умный, с лёгким юмором. Контекст: " + intent_tag.replace("_", " ") + "."
     )
     try:
         from ollama import chat
@@ -202,7 +200,7 @@ def process(text: str, predictor: IntentPredictor | None = None, last_intent: st
         date_str = f"{weekday}, {d.day} {months[d.month-1]} {d.year}"
         return random.choice(responses).replace("%date%", date_str), False, tag
 
-    # Разговорные интенты: ответ даёт LLM (Ollama), иначе — шаблон
+    # Разговоры: ответ от нейросети (Ollama), иначе — шаблон
     if LLM_ENABLED:
         llm = _llm_reply(text, tag)
         if llm:

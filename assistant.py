@@ -10,7 +10,7 @@ from pathlib import Path
 
 from neural.intents_model import IntentPredictor
 from pc_controller import open_app, search_in_browser
-from config import INTENTS_FILE, APPS
+from config import INTENTS_FILE, APPS, LLM_ENABLED, LLM_MODEL, LLM_MAX_LENGTH
 
 
 # Команды поиска: если фраза НАЧИНАЕТСЯ с одного из них — это всегда поиск (мимо нейросети)
@@ -91,6 +91,39 @@ def _is_implicit_search(text: str) -> bool:
     return any(t.startswith(p) for p in IMPLICIT_SEARCH_PREFIXES)
 
 
+def _llm_reply(user_text: str, intent_tag: str) -> str | None:
+    """
+    Ответ от LLM (Ollama) вместо шаблона. Возвращает None при отключении/ошибке — тогда используется шаблон.
+    """
+    if not LLM_ENABLED:
+        return None
+    system = (
+        "Ты VegraAI — голосовой помощник в стиле Джарвиса. Отвечай на русском, кратко (1–4 предложения) и по-человечески. "
+        "Можешь шутить, подбадривать, давать советы. Не говори «я нейросеть» или «я программа», если не спросят. "
+        "Стиль: дружелюбный, умный, с лёгким юмором. Контекст реплики: " + intent_tag.replace("_", " ") + "."
+    )
+    try:
+        from ollama import chat
+
+        r = chat(
+            model=LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_text},
+            ],
+        )
+        content = (r.message.content or "").strip()
+        if not content:
+            return None
+        if len(content) > LLM_MAX_LENGTH:
+            cut = content[: LLM_MAX_LENGTH + 1]
+            last = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "), cut.rfind("\n"))
+            content = cut[: last + 1].strip() if last > LLM_MAX_LENGTH // 2 else cut[:LLM_MAX_LENGTH].rstrip(" .,!?") + "."
+        return content
+    except Exception:
+        return None
+
+
 def _get_follow_up_search_query(text: str, last_intent: str | None) -> str | None:
     """Если прошлый ответ был поиск и фраза «а теперь X» / «теперь X» / «ещё X» — вернуть X как запрос."""
     if last_intent != "поиск_в_интернете":
@@ -169,4 +202,9 @@ def process(text: str, predictor: IntentPredictor | None = None, last_intent: st
         date_str = f"{weekday}, {d.day} {months[d.month-1]} {d.year}"
         return random.choice(responses).replace("%date%", date_str), False, tag
 
+    # Разговорные интенты: ответ даёт LLM (Ollama), иначе — шаблон
+    if LLM_ENABLED:
+        llm = _llm_reply(text, tag)
+        if llm:
+            return llm, should_exit, tag
     return random.choice(responses), should_exit, tag

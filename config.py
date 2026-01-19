@@ -49,3 +49,9 @@ VOCAB_PATH = "data/vocab.json"
 VOICE_INDEX = 0
 SPEECH_RATE = 150   # Скорость речи (слов в минуту)
 VOLUME = 1.0        # Громкость 0.0–1.0
+
+# ============ LLM (Ollama) — ответы не шаблонами, а нейросетью ============
+# Нужно: 1) Установить Ollama с https://ollama.com  2) В терминале: ollama pull llama3.2
+LLM_ENABLED = True
+LLM_MODEL = "llama3.2"   # или: mistral, qwen2.5:3b, phi3 — что скачано в Ollama
+LLM_MAX_LENGTH = 600     # макс. длина ответа (для озвучки не стоит делать длиннее)

@@ -15,3 +15,6 @@ pywin32>=306; sys_platform == 'win32'
 
 # GUI приложения (чат, переключатель)
 customtkinter>=5.2.0
+
+# LLM для ответов (Ollama — локально, без ключей)
+ollama>=0.3.0
